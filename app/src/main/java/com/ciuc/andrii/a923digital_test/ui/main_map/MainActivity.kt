@@ -29,10 +29,12 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_no_internet_gps.*
 import java.io.File
 import java.io.IOException
+import java.lang.ref.WeakReference
 
 
 class MainActivity : AppCompatActivity(), LocationListener,
-    ActivityCompat.OnRequestPermissionsResultCallback {
+    ActivityCompat.OnRequestPermissionsResultCallback,
+    PositioningManager.OnPositionChangedListener {
 
     private var hasPermissions: Boolean = false
     private var gpsProviderEnabled = false
@@ -43,6 +45,8 @@ class MainActivity : AppCompatActivity(), LocationListener,
     private var currentLocation: GeoCoordinate? = null
     private var listMarkers = arrayListOf<MapMarker>()
     private var mapEngineInitialized: Boolean = false
+    private var currentLocationMarker: MapMarker? = null
+    private var locationManager: LocationManager? = null
 
 
     private val mainViewModel: MainViewModel by lazy {
@@ -68,6 +72,10 @@ class MainActivity : AppCompatActivity(), LocationListener,
 
         MapSettings.setDiskCacheRootPath(filesDir.absolutePath + File.separator + ".here-maps")
 
+        //todo Location
+        locationManager =
+            getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
         mapFragment?.let { mapFragment ->
             mapFragment.init { error ->
                 if (error == OnEngineInitListener.Error.NONE) {
@@ -77,6 +85,7 @@ class MainActivity : AppCompatActivity(), LocationListener,
                         Map.Animation.NONE
                     )
                     map?.zoomLevel = (map?.maxZoomLevel as Double + map?.minZoomLevel!!) / 2
+
                 } else {
                     toast(getString(R.string.cannot_initialize_map))
                 }
@@ -88,17 +97,35 @@ class MainActivity : AppCompatActivity(), LocationListener,
         ) { error ->
             if (error == OnEngineInitListener.Error.NONE) {
                 mapEngineInitialized = true
-                currentLocation?.let {
-                    val wayPoint = RouteWaypoint(
-                        GeoCoordinate(
-                            48.394580, 25.952817
-                        )
-                    )
-                    addMarkerToMap(wayPoint.originalPosition)
-                }
+                startPositionManager()
 
+                val wayPoint = RouteWaypoint(
+                    GeoCoordinate(
+                        48.394580, 25.952817
+                    )
+                )
+                //createRouteFromCurrentLocation(wayPoint)
                 //testing search places functionality
                 //searchPlaces()
+            }
+        }
+
+        if (mapEngineInitialized) {
+            val wayPoint = RouteWaypoint(
+                GeoCoordinate(
+                    48.394580, 25.952817
+                )
+            )
+
+            currentLocation?.let {
+                addMarkerToMap(
+                    /*GeoCoordinate(
+                        currentLocation?.latitude as Double, currentLocation?.longitude as Double
+                    )*/
+                    GeoCoordinate(
+                        48.394580, 25.952817
+                    )
+                )
             }
         }
     }
@@ -165,6 +192,21 @@ class MainActivity : AppCompatActivity(), LocationListener,
             showNoInternetOrGpsDialog(internetEnabled, gpsProviderEnabled)
     }
 
+
+    private fun startPositionManager() {
+        //todo Using Google's GPS services, because they works faster
+        val googleLocationDataSource = LocationDataSourceGoogleServices.getInstance()
+        if (googleLocationDataSource != null) {
+            val pm = PositioningManager.getInstance()
+            pm.dataSource = googleLocationDataSource
+            pm.addListener(WeakReference(this@MainActivity))
+            if (pm.start(PositioningManager.LocationMethod.GPS_NETWORK)) {
+                // Position updates started successfully.
+                toast("Position updates started successfully.")
+            }
+        }
+    }
+
     private fun gpsProviderEnabled(): Boolean {
         val locationManager =
             getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -199,6 +241,11 @@ class MainActivity : AppCompatActivity(), LocationListener,
     }
 
 
+    override fun onDestroy() {
+        super.onDestroy()
+        locationManager?.removeUpdates(this@MainActivity)
+    }
+
     override fun onBackPressed() {
         val fragment =
             SearchFragment.newInstance()
@@ -228,20 +275,41 @@ class MainActivity : AppCompatActivity(), LocationListener,
 
     }
 
+    override fun onPositionFixChanged(
+        p0: PositioningManager.LocationMethod?,
+        p1: PositioningManager.LocationStatus?
+    ) {
+        // positioning method changed
+
+    }
+
+    override fun onPositionUpdated(
+        p0: PositioningManager.LocationMethod?,
+        geoPosition: GeoPosition?,
+        p2: Boolean
+    ) {
+        // new position update received
+        addMarkerToMap(
+            GeoCoordinate(
+                geoPosition?.coordinate?.latitude!!,
+                geoPosition.coordinate.longitude
+            )
+        )
+    }
+
     private fun addMarkerToMap(geoCoordinate: GeoCoordinate, iconID: Int = R.drawable.ic_marker) {
         val markerImage = Image()
         try {
             markerImage.setImageResource(iconID)
-
-            val marker = MapMarker(geoCoordinate, markerImage)
-
-            marker.isDraggable = true
-            marker.title = "MapMarker id: ${listMarkers.size + 1}"
-
-            marker.let {
-                map?.addMapObject(it)
-                listMarkers.add(it)
+            if (currentLocationMarker != null) {
+                map?.removeMapObject(currentLocationMarker as MapMarker)
+                listMarkers.remove(currentLocationMarker as MapMarker)
             }
+
+            currentLocationMarker = MapMarker(geoCoordinate, markerImage)
+            map?.addMapObject(currentLocationMarker as MapMarker)
+            listMarkers.add(currentLocationMarker as MapMarker)
+
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -332,4 +400,6 @@ class MainActivity : AppCompatActivity(), LocationListener,
             placeRequest?.execute(placeResultListener)
         }
     }
+
+
 }

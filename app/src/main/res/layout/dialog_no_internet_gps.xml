@@ -20,49 +20,50 @@
         android:textColor="@color/text_color_black"
         android:textSize="@dimen/text_size_20"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/titleInternet"
+        app:layout_constraintBottom_toTopOf="@+id/layoutGpsInternet"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/titleInternet"
-        style="@style/TextWhite"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/layoutGpsInternet"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin_small_button"
-        android:layout_marginTop="@dimen/margin_small_button"
-        android:layout_marginEnd="@dimen/margin_small_button"
-        android:layout_marginBottom="@dimen/margin_small_button"
-        android:gravity="center"
-        android:text="@string/internet"
-        android:textSize="@dimen/text_size_16"
-        android:textStyle="bold"
-        android:visibility="gone"
-
-        app:layout_constraintBottom_toTopOf="@+id/btnRetry"
-        app:layout_constraintEnd_toStartOf="@+id/titleGps"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title" />
-
-    <TextView
-        android:id="@+id/titleGps"
-        style="@style/TextWhite"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin_small_button"
-        android:layout_marginTop="@dimen/margin_small_button"
-        android:layout_marginEnd="@dimen/margin_small_button"
-        android:layout_marginBottom="@dimen/margin_small_button"
-        android:gravity="center"
-        android:text="@string/gps"
-        android:textSize="@dimen/text_size_16"
-        android:textStyle="bold"
-        android:visibility="gone"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@+id/btnRetry"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/titleInternet"
-        app:layout_constraintTop_toBottomOf="@+id/title" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title"
+        android:layout_marginTop="@dimen/margin_small_button"
+        android:layout_marginBottom="@dimen/margin_small_button">
+
+        <TextView
+            android:id="@+id/titleInternet"
+            style="@style/TextWhite"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/margin_small_button"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/internet"
+            android:textSize="@dimen/text_size_16"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/titleGps"
+            style="@style/TextWhite"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/margin_small_button"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/gps"
+            android:textSize="@dimen/text_size_16"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+    </LinearLayout>
 
     <com.google.android.material.button.MaterialButton
 
@@ -81,7 +82,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/titleGps" />
+        app:layout_constraintTop_toBottomOf="@+id/layoutGpsInternet" />
 </androidx.constraintlayout.widget.ConstraintLayout>
 
 
