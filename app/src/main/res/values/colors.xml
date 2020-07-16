@@ -3,4 +3,21 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
+
+    <color name="search_button_bg">#ffffff</color>
+    <color name="search_button_ripple">#939393</color>
+    <color name="search_fragment_bg">#ffffff</color>
+    <color name="search_fragment_stroke">#B7E3E0E0</color>
+    <color name="devider_color">#939393</color>
+    <color name="button_green_bg">#4e8f57</color>
+    <color name="button_green_bg_clicked">#437C4C</color>
+    <color name="button_green_text">#ffffff</color>
+    <color name="button_transparent_bg">@android:color/transparent</color>
+    <color name="button_transparent_text">#4e8f57</color>
+
+    <color name="text_color_green">#4e8f57</color>
+    <color name="text_color_black">#1B1B1B</color>
+
+
+    <color name="transparent_status_bar">#31FFFFFF</color>
 </resources>

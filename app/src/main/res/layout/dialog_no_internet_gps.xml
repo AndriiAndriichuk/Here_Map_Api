@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:layout_marginStart="@dimen/margin_50dp"
+    android:layout_marginEnd="@dimen/margin_50dp"
+    android:background="@color/button_transparent_bg"
+    app:cardCornerRadius="@dimen/elevation_card_8">
+
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="@string/please_turn_on"
+        android:textColor="@color/text_color_black"
+        android:textSize="@dimen/text_size_20"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/titleInternet"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/titleInternet"
+        style="@style/TextWhite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_small_button"
+        android:layout_marginTop="@dimen/margin_small_button"
+        android:layout_marginEnd="@dimen/margin_small_button"
+        android:layout_marginBottom="@dimen/margin_small_button"
+        android:gravity="center"
+        android:text="@string/internet"
+        android:textSize="@dimen/text_size_16"
+        android:textStyle="bold"
+        android:visibility="gone"
+
+        app:layout_constraintBottom_toTopOf="@+id/btnRetry"
+        app:layout_constraintEnd_toStartOf="@+id/titleGps"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title" />
+
+    <TextView
+        android:id="@+id/titleGps"
+        style="@style/TextWhite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_small_button"
+        android:layout_marginTop="@dimen/margin_small_button"
+        android:layout_marginEnd="@dimen/margin_small_button"
+        android:layout_marginBottom="@dimen/margin_small_button"
+        android:gravity="center"
+        android:text="@string/gps"
+        android:textSize="@dimen/text_size_16"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/btnRetry"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/titleInternet"
+        app:layout_constraintTop_toBottomOf="@+id/title" />
+
+    <com.google.android.material.button.MaterialButton
+
+        android:id="@+id/btnRetry"
+        style="@style/TextGreen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/margin_small_button"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:padding="@dimen/padding_10"
+        android:text="@string/retry"
+        android:textAlignment="center"
+        android:textAllCaps="false"
+        android:textSize="@dimen/text_size_16"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titleGps" />
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+

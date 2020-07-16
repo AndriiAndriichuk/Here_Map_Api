@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_search"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="100dp"
+    android:background="@drawable/bg_search_fragment">
+
+    <LinearLayout
+        android:id="@+id/layoutCloseSearchFragment"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/scrollSearch"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <View
+            android:layout_width="100dp"
+            android:layout_height="2dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:background="@color/devider_color" />
+    </LinearLayout>
+
+
+    <ScrollView
+        android:id="@+id/scrollSearch"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/btnAddStop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layoutCloseSearchFragment">
+
+        <LinearLayout
+            android:id="@+id/linearSearchLabels"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.ciuc.andrii.a923digital_test.ui.search.custom_view.waypoint_view.WayPointView
+                android:id="@+id/wayPointStopOne"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    </ScrollView>
+
+    <Button
+        android:id="@+id/btnAddStop"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_small_button"
+        android:layout_marginEnd="@dimen/margin_big_button"
+        android:layout_marginBottom="@dimen/margin_small_button"
+        android:background="@drawable/bg_button_transparent"
+        android:text="@string/add_stop"
+        android:textColor="@color/button_transparent_text"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btnDrive"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/scrollSearch" />
+
+    <Button
+        android:id="@+id/btnDrive"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_big_button"
+        android:layout_marginEnd="@dimen/margin_small_button"
+        android:layout_marginBottom="@dimen/margin_small_button"
+        android:background="@drawable/bg_button_colored"
+        android:text="@string/drive"
+        android:textColor="@color/button_green_text"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btnAddStop"
+        app:layout_constraintTop_toBottomOf="@+id/scrollSearch" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

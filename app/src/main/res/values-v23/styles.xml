@@ -1,24 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base application theme. -->
+
     <style name="AppTheme" parent="Theme.MaterialComponents.Light">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@color/transparent_status_bar</item>
+
     </style>
-
-    <style name="TextWhite">
-        <item name="android:background">@drawable/bg_button_transparent</item>
-        <item name="android:textColor">@color/button_transparent_text</item>
-    </style>
-
-    <style name="TextGreen">
-        <item name="android:background">@drawable/bg_button_colored</item>
-        <item name="android:textColor">@color/button_green_text</item>
-    </style>
-
-
 </resources>
