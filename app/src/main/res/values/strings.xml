@@ -23,4 +23,6 @@
     <string name="end">End</string>
     <string name="stop">Stop</string>
     <string name="my_location">My location</string>
+    <string name="simulation">Simulation</string>
+    <string name="navigation">Navigation</string>
 </resources>

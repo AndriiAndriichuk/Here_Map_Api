@@ -16,7 +16,7 @@
     <dimen name="text_size_16">16sp</dimen>
     <dimen name="text_size_20">20sp</dimen>
 
-    <!--Paddings-->
+    <!--Padding-->
     <dimen name="padding_10">10dp</dimen>
     <dimen name="padding_12dp">12dp</dimen>
     <dimen name="padding_16">16dp</dimen>

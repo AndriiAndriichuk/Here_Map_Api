@@ -15,6 +15,7 @@
     <color name="button_transparent_bg">@android:color/transparent</color>
     <color name="button_transparent_text">#4e8f57</color>
     <color name="button_red_bg">#8f4d4e</color>
+    <color name="button_blue_bg">#6D82D4</color>
 
     <color name="text_color_green">#4e8f57</color>
     <color name="text_color_black">#1B1B1B</color>

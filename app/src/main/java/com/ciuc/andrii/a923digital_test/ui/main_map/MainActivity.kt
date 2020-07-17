@@ -23,7 +23,6 @@ import com.here.android.mpa.mapping.*
 import com.here.android.mpa.mapping.Map
 import com.here.android.mpa.routing.*
 import com.here.android.mpa.routing.Route.TrafficPenaltyMode
-import com.here.android.mpa.search.DiscoveryResult
 import com.here.android.mpa.search.PlaceLink
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
@@ -44,6 +43,7 @@ class MainActivity : BaseActivity(),
     private var locationManager: LocationManager? = null
     private var currentRoute: Route? = null
     private var onNavigationMode = false
+    private var appWasPaused = false
 
     private val mainViewModel: MainViewModel by lazy {
         ViewModelProviders.of(this).get(MainViewModel::class.java)
@@ -57,6 +57,7 @@ class MainActivity : BaseActivity(),
                 addWayPointMarkerToMap(wayPoint)
                 createRouteFromCurrentLocation(list)
                 btnSimulate.show()
+                btnChangeNavigationMode.show()
             }
         }
     }
@@ -195,7 +196,7 @@ class MainActivity : BaseActivity(),
 
     private fun initializeMap() {
         mapFragment =
-            supportFragmentManager.findFragmentById(R.id.mapfragment) as AndroidXMapFragment
+            supportFragmentManager.findFragmentById(R.id.mapFragment) as AndroidXMapFragment
 
         MapSettings.setDiskCacheRootPath(filesDir.absolutePath + File.separator + ".here-maps")
 
@@ -248,7 +249,9 @@ class MainActivity : BaseActivity(),
         )
 
         val voiceCatalog = VoiceCatalog.getInstance()
-        voiceCatalog.downloadCatalog { errorCode -> }
+        voiceCatalog.downloadCatalog { errorCode ->
+
+        }
 
         // Get the list of voice packages from the voice catalog list
         val voicePackages =
@@ -285,7 +288,12 @@ class MainActivity : BaseActivity(),
     ) {
         // if user wants to start simulation,
         // submit calculated route and a simulation speed in meters per second
-        navigationManager?.simulate(route, speedMph)
+        if (btnChangeNavigationMode.isChecked){
+            navigationManager?.simulate(route, speedMph)
+        } else {
+            navigationManager?.startNavigation(route/*, speedMph*/)
+        }
+
 
     }
 
@@ -312,6 +320,7 @@ class MainActivity : BaseActivity(),
 
         btnSimulate.setOnClickListener {
             btnSimulate.gone()
+            btnChangeNavigationMode.gone()
             btnEndSimulation.show()
             btnPauseSimulation.show()
             currentRoute?.let {
@@ -339,6 +348,21 @@ class MainActivity : BaseActivity(),
                 navigationManager?.resume()
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("12345", "OnResume")
+        if (appWasPaused) {
+            navigationManager?.resume()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("12345", "OnPause")
+        appWasPaused = true
+        navigationManager?.pause()
     }
 
     override fun checkInternetAndGps() {

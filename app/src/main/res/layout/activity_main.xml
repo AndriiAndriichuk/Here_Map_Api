@@ -11,7 +11,7 @@
 
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/mapfragment"
+        android:id="@+id/mapFragment"
         android:name="com.here.android.mpa.mapping.AndroidXMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -78,5 +78,22 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+
+    <androidx.appcompat.widget.AppCompatToggleButton
+        android:id="@+id/btnChangeNavigationMode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_30dp"
+        android:layout_marginBottom="@dimen/margin_35dp"
+        android:background="@drawable/bg_button_blue"
+        android:backgroundTint="@color/button_blue_bg"
+        android:checked="true"
+        android:textOn="@string/simulation"
+        android:textOff="@string/navigation"
+        android:padding="@dimen/padding_10"
+        android:textColor="@color/button_green_text"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
