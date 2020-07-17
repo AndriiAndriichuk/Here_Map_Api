@@ -10,6 +10,10 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProviders
 import com.ciuc.andrii.a923digital_test.R
+import com.ciuc.andrii.a923digital_test.di.DaggerMapComponent
+import com.ciuc.andrii.a923digital_test.di.MapComponent
+import com.ciuc.andrii.a923digital_test.di.module.NavigationManagerModule
+import com.ciuc.andrii.a923digital_test.di.module.RouteOptionsModule
 import com.ciuc.andrii.a923digital_test.ui.BaseActivity
 import com.ciuc.andrii.a923digital_test.ui.search.listener.OnDriveStartedListener
 import com.ciuc.andrii.a923digital_test.ui.search.SearchFragment
@@ -38,7 +42,7 @@ class MainActivity : BaseActivity(),
     private var mapFragment: AndroidXMapFragment? = null
     private var currentLocationMarker: MapMarker? = null
     private var locationManager: LocationManager? = null
-    private var navigationManager: NavigationManager? = null
+   // private var navigationManager: NavigationManager? = null
     private var currentLocation: GeoCoordinate? = null
     private var currentRoute: Route? = null
     private var listMarkers = arrayListOf<MapMarker>()
@@ -47,7 +51,7 @@ class MainActivity : BaseActivity(),
     private var onNavigationMode: Boolean = false
     private var appWasPaused: Boolean = false
 
-
+    private var daggerMapComponent: MapComponent? = null
 
     private val mainViewModel: MainViewModel by lazy {
         ViewModelProviders.of(this).get(MainViewModel::class.java)
@@ -131,32 +135,6 @@ class MainActivity : BaseActivity(),
 
     }
 
-    //todo Navigation listeners
-    private val instructListener: NewInstructionEventListener =
-        object : NewInstructionEventListener() {
-            override fun onNewInstructionEvent() {
-                // Interpret and present the Maneuver object as it contains
-                // turn by turn navigation instructions for the user.
-                navigationManager?.nextManeuver
-            }
-        }
-
-    private val positionListener: NavigationManager.PositionListener =
-        object : NavigationManager.PositionListener() {
-            override fun onPositionUpdated(loc: GeoPosition) {
-                // the position we get in this callback can be used
-                // to reposition the map and change orientation.
-                loc.coordinate
-                loc.heading
-                loc.speed
-
-                // also remaining time and distance can be
-                // fetched from navigation manager
-                navigationManager?.getTta(TrafficPenaltyMode.DISABLED, true)
-                navigationManager?.destinationDistance
-            }
-        }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -222,22 +200,28 @@ class MainActivity : BaseActivity(),
                 mapEngineInitialized = true
                 startPositionManager()
                 initializeNavigation()
+                daggerMapComponent = DaggerMapComponent
+                    .builder()
+                    .routeOptionsModule(RouteOptionsModule(RouteOptions()))
+                    .navigationManagerModule(NavigationManagerModule(NavigationManager.getInstance()))
+                    .build()
+
             }
         }
     }
 
     private fun initializeNavigation() {
-        navigationManager = NavigationManager.getInstance()
+       // navigationManager = NavigationManager.getInstance()
 
-        // start listening for navigation events
-        navigationManager?.addNewInstructionEventListener(
-            WeakReference(instructListener)
-        )
+        /* // start listening for navigation events
+         navigationManager?.addNewInstructionEventListener(
+             WeakReference(instructListener)
+         )
 
-        // start listening for position events
-        navigationManager?.addPositionListener(
-            WeakReference(positionListener)
-        )
+         // start listening for position events
+         navigationManager?.addPositionListener(
+             WeakReference(positionListener)
+         )*/
 
         val voiceCatalog = VoiceCatalog.getInstance()
         voiceCatalog.downloadCatalog { errorCode ->
@@ -265,7 +249,7 @@ class MainActivity : BaseActivity(),
         }
 
         // obtain VoiceGuidanceOptions object
-        val voiceGuidanceOptions = navigationManager?.voiceGuidanceOptions
+        val voiceGuidanceOptions = daggerMapComponent?.navigationManagerModule?.navigationManager?.voiceGuidanceOptions
 
         // set the voice skin for use by navigation manager
         voiceCatalog.getLocalVoiceSkin(id)?.let { voiceGuidanceOptions?.setVoiceSkin(it) }
@@ -278,10 +262,10 @@ class MainActivity : BaseActivity(),
     ) {
         // if user wants to start simulation,
         // submit calculated route and a simulation speed in meters per second
-        if (btnChangeNavigationMode.isChecked){
-            navigationManager?.simulate(route, speedMph)
+        if (btnChangeNavigationMode.isChecked) {
+            daggerMapComponent?.navigationManagerModule?.navigationManager?.simulate(route, speedMph)
         } else {
-            navigationManager?.startNavigation(route/*, speedMph*/)
+            daggerMapComponent?.navigationManagerModule?.navigationManager?.startNavigation(route)
         }
 
 
@@ -325,17 +309,17 @@ class MainActivity : BaseActivity(),
             btnPauseSimulation.gone()
             clearMapExceptLocation()
             // abort navigation
-            navigationManager?.stop()
+            daggerMapComponent?.navigationManagerModule?.navigationManager?.stop()
             onNavigationMode = false
         }
 
         btnPauseSimulation.setOnClickListener {
             if (btnPauseSimulation.text == resources.getString(R.string.pause)) {
                 btnPauseSimulation.text = resources.getString(R.string.resume)
-                navigationManager?.pause()
+                daggerMapComponent?.navigationManagerModule?.navigationManager?.pause()
             } else {
                 btnPauseSimulation.text = resources.getString(R.string.pause)
-                navigationManager?.resume()
+                daggerMapComponent?.navigationManagerModule?.navigationManager?.resume()
             }
         }
     }
@@ -344,7 +328,7 @@ class MainActivity : BaseActivity(),
         super.onResume()
         Log.d("12345", "OnResume")
         if (appWasPaused) {
-            navigationManager?.resume()
+            daggerMapComponent?.navigationManagerModule?.navigationManager?.resume()
         }
     }
 
@@ -352,7 +336,7 @@ class MainActivity : BaseActivity(),
         super.onPause()
         Log.d("12345", "OnPause")
         appWasPaused = true
-        navigationManager?.pause()
+        daggerMapComponent?.navigationManagerModule?.navigationManager?.pause()
     }
 
     override fun checkInternetAndGps() {
@@ -450,13 +434,6 @@ class MainActivity : BaseActivity(),
     private fun createRouteFromCurrentLocation(list: List<PlaceLink>) {
         val router = CoreRouter()
 
-        val routeOptions = RouteOptions()
-        routeOptions.transportMode = RouteOptions.TransportMode.CAR
-        routeOptions.setHighwaysAllowed(false)
-        routeOptions.routeType =
-            RouteOptions.Type.FASTEST
-        routeOptions.routeCount = 1
-
         val routePlan = RoutePlan()
         currentLocation?.let {
             routePlan.addWaypoint(
@@ -470,7 +447,7 @@ class MainActivity : BaseActivity(),
             routePlan.addWaypoint(it.toRouteWayPoint())
         }
 
-        routePlan.routeOptions = routeOptions
+         daggerMapComponent?.routeOptionsModule?.routeOptions.let { routePlan.routeOptions }
 
         // Calculate the route
         router.calculateRoute(routePlan, RouteListener())
