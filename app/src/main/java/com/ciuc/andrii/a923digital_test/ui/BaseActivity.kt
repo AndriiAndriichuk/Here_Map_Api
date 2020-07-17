@@ -73,7 +73,7 @@ open class BaseActivity : AppCompatActivity(),  ActivityCompat.OnRequestPermissi
             PackageManager.FEATURE_LOCATION_GPS
         )
     }
-    
+
     protected fun showNoInternetOrGpsDialog(
         internetEnabled: Boolean = true,
         gpsEnabled: Boolean = true

@@ -55,6 +55,22 @@ class MainActivity : BaseActivity(),
 
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        hasPermissions = (requestCode == PERMISSIONS_REQUEST && resultCode == Activity.RESULT_OK)
+    }
+
+
+    override fun onBackPressed() {
+        val fragment =
+            supportFragmentManager.findFragmentByTag(SearchFragment.TAG)
+        if (fragment != null) {
+            supportFragmentManager.removeFragment(fragment)
+        } else {
+            super.onBackPressed()
+        }
+    }
+
     private fun initializeMap() {
         mapFragment =
             supportFragmentManager.findFragmentById(R.id.mapfragment) as AndroidXMapFragment
@@ -122,9 +138,7 @@ class MainActivity : BaseActivity(),
                 supportFragmentManager.removeFragment(fragment)
             }
         }
-
     }
-
 
     override fun checkInternetAndGps() {
         gpsProviderEnabled = gpsProviderEnabled()
@@ -133,7 +147,6 @@ class MainActivity : BaseActivity(),
         if (gpsProviderEnabled.not() || internetEnabled.not())
             showNoInternetOrGpsDialog(internetEnabled, gpsProviderEnabled)
     }
-
 
     private fun startPositionManager() {
         //todo Using Google's GPS services, because they works faster
@@ -146,25 +159,6 @@ class MainActivity : BaseActivity(),
                 // Position updates started successfully.
                 toast("Position updates started successfully.")
             }
-        }
-    }
-
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == PERMISSIONS_REQUEST && resultCode == Activity.RESULT_OK) {
-            hasPermissions = true
-        }
-    }
-
-
-    override fun onBackPressed() {
-        val fragment =
-            supportFragmentManager.findFragmentByTag(SearchFragment.TAG)
-        if (fragment != null) {
-            supportFragmentManager.removeFragment(fragment)
-        } else {
-            super.onBackPressed()
         }
     }
 
