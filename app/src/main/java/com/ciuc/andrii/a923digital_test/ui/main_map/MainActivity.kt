@@ -5,17 +5,20 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProviders
 import com.ciuc.andrii.a923digital_test.R
+import com.ciuc.andrii.a923digital_test.ui.search.OnDriveStartedListener
 import com.ciuc.andrii.a923digital_test.ui.search.SearchFragment
 import com.ciuc.andrii.a923digital_test.utils.*
 import com.here.android.mpa.common.*
@@ -30,9 +33,10 @@ import kotlinx.android.synthetic.main.dialog_no_internet_gps.*
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
+import java.security.AccessController
 
 
-class MainActivity : AppCompatActivity(), LocationListener,
+class MainActivity : AppCompatActivity(),
     ActivityCompat.OnRequestPermissionsResultCallback,
     PositioningManager.OnPositionChangedListener {
 
@@ -99,41 +103,33 @@ class MainActivity : AppCompatActivity(), LocationListener,
                 mapEngineInitialized = true
                 startPositionManager()
 
-                val wayPoint = RouteWaypoint(
-                    GeoCoordinate(
-                        48.394580, 25.952817
-                    )
-                )
                 //createRouteFromCurrentLocation(wayPoint)
                 //testing search places functionality
                 //searchPlaces()
             }
         }
-
-        if (mapEngineInitialized) {
-            val wayPoint = RouteWaypoint(
-                GeoCoordinate(
-                    48.394580, 25.952817
-                )
-            )
-
-            currentLocation?.let {
-                addMarkerToMap(
-                    /*GeoCoordinate(
-                        currentLocation?.latitude as Double, currentLocation?.longitude as Double
-                    )*/
-                    GeoCoordinate(
-                        48.394580, 25.952817
-                    )
-                )
-            }
-        }
     }
 
     private fun setUpUI() {
+        //hiding ActionBar
         supportActionBar?.hide()
 
-        val fragment = SearchFragment.newInstance()
+        hideKeyboardIfUserClicksNotOnEditText(window.decorView.rootView)
+
+        //todo Adding listener to fix selected wayPoints in Fragment
+        val fragment =
+            SearchFragment.newInstance(
+                listener = object : OnDriveStartedListener {
+                    override fun onDriveStarted(list: List<RouteWaypoint>) {
+                        toast(list.toString())
+                        list.forEach { wayPoint ->
+                            addWayPointMarkerToMap(wayPoint.originalPosition)
+                            createRouteFromCurrentLocation(list)
+                        }
+                    }
+                })
+
+
         btnSearch.setOnClickListener {
             if (supportFragmentManager.containsFragment(fragment)) {
                 supportFragmentManager.addFragment(fragment)
@@ -142,6 +138,42 @@ class MainActivity : AppCompatActivity(), LocationListener,
             }
         }
 
+    }
+
+    //todo The function allows us to hide keyboard if user clicks on all views except ExitText
+    private fun hideKeyboardIfUserClicksNotOnEditText(view: View) {
+        // Set up touch listener for non-text box views to hide keyboard.
+        if (view !is EditText) {
+            view.setOnTouchListener { _, _ ->
+                if (AccessController.getContext() != null)
+                    hideKeyboard(this)
+                false
+            }
+        }
+        //If a layout container, iterate over children and seed recursion.
+        if (view is ViewGroup) {
+            for (i in 0 until view.childCount) {
+                val innerView = view.getChildAt(i)
+                hideKeyboardIfUserClicksNotOnEditText(innerView)
+            }
+        }
+    }
+
+    //todo Hiding system's keyboard
+    private fun hideKeyboard(context: Context) {
+        val inputManager =
+            context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        if ((context as Activity).currentFocus != null) {
+            try {
+                inputManager.hideSoftInputFromWindow(
+                    (context as AppCompatActivity).currentFocus!!.windowToken,
+                    0
+                )
+            } catch (ex: NullPointerException) {
+                ex.printStackTrace()
+            }
+
+        }
     }
 
     private fun checkPermissions(): Boolean {
@@ -240,39 +272,14 @@ class MainActivity : AppCompatActivity(), LocationListener,
         dialog.show()
     }
 
-
-    override fun onDestroy() {
-        super.onDestroy()
-        locationManager?.removeUpdates(this@MainActivity)
-    }
-
     override fun onBackPressed() {
         val fragment =
-            SearchFragment.newInstance()
-        if (supportFragmentManager.findFragmentByTag(fragment.javaClass.simpleName) != null) {
-            supportFragmentManager.beginTransaction()
-                .remove(fragment).commit()
+            supportFragmentManager.findFragmentByTag(SearchFragment.TAG)
+        if (fragment != null) {
+            supportFragmentManager.removeFragment(fragment)
         } else {
             super.onBackPressed()
         }
-    }
-
-
-    override fun onLocationChanged(location: Location) {
-        currentLocation = GeoCoordinate(location.latitude, location.longitude, location.altitude)
-        currentLocation?.let { addMarkerToMap(it) }
-    }
-
-    override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
-
-    }
-
-    override fun onProviderEnabled(provider: String?) {
-
-    }
-
-    override fun onProviderDisabled(provider: String?) {
-
     }
 
     override fun onPositionFixChanged(
@@ -289,18 +296,16 @@ class MainActivity : AppCompatActivity(), LocationListener,
         p2: Boolean
     ) {
         // new position update received
-        addMarkerToMap(
-            GeoCoordinate(
-                geoPosition?.coordinate?.latitude!!,
-                geoPosition.coordinate.longitude
-            )
-        )
+        geoPosition?.coordinate?.let {
+            currentLocation = GeoCoordinate(it)
+            addCurrentLocationMarkerToMap(it)
+        }
     }
 
-    private fun addMarkerToMap(geoCoordinate: GeoCoordinate, iconID: Int = R.drawable.ic_marker) {
+    private fun addCurrentLocationMarkerToMap(geoCoordinate: GeoCoordinate) {
         val markerImage = Image()
         try {
-            markerImage.setImageResource(iconID)
+            markerImage.setImageResource(R.drawable.ic_marker)
             if (currentLocationMarker != null) {
                 map?.removeMapObject(currentLocationMarker as MapMarker)
                 listMarkers.remove(currentLocationMarker as MapMarker)
@@ -309,6 +314,19 @@ class MainActivity : AppCompatActivity(), LocationListener,
             currentLocationMarker = MapMarker(geoCoordinate, markerImage)
             map?.addMapObject(currentLocationMarker as MapMarker)
             listMarkers.add(currentLocationMarker as MapMarker)
+
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun addWayPointMarkerToMap(geoCoordinate: GeoCoordinate) {
+        val markerImage = Image()
+        try {
+            markerImage.setImageResource(R.drawable.ic_circle)
+            val marker = MapMarker(geoCoordinate, markerImage)
+            map?.addMapObject(marker)
+            listMarkers.add(marker)
 
         } catch (e: IOException) {
             e.printStackTrace()
@@ -337,6 +355,36 @@ class MainActivity : AppCompatActivity(), LocationListener,
         )
 
         // Create the RouteOptions and set its transport mode & routing type
+
+        routePlan.routeOptions = routeOptions
+
+
+        // Calculate the route
+        router.calculateRoute(routePlan, RouteListener())
+    }
+
+    private fun createRouteFromCurrentLocation(list: List<RouteWaypoint>) {
+        val router = CoreRouter()
+
+        val routeOptions = RouteOptions()
+        routeOptions.transportMode = RouteOptions.TransportMode.CAR
+        routeOptions.setHighwaysAllowed(false)
+        routeOptions.routeType =
+            RouteOptions.Type.FASTEST
+        routeOptions.routeCount = 1
+
+        val routePlan = RoutePlan()
+        currentLocation?.let {
+            routePlan.addWaypoint(
+                RouteWaypoint(
+                    currentLocation as GeoCoordinate
+                )
+            )
+        }
+
+        list.forEach {
+            routePlan.addWaypoint(it)
+        }
 
         routePlan.routeOptions = routeOptions
 
@@ -400,6 +448,5 @@ class MainActivity : AppCompatActivity(), LocationListener,
             placeRequest?.execute(placeResultListener)
         }
     }
-
 
 }

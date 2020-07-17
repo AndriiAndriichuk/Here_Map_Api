@@ -43,10 +43,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <com.ciuc.andrii.a923digital_test.ui.search.custom_view.waypoint_view.WayPointView
-                android:id="@+id/wayPointStopOne"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
         </LinearLayout>
     </ScrollView>
 
@@ -58,6 +54,8 @@
         android:layout_marginEnd="@dimen/margin_big_button"
         android:layout_marginBottom="@dimen/margin_small_button"
         android:background="@drawable/bg_button_transparent"
+        android:backgroundTint="@color/button_transparent_bg"
+        android:backgroundTintMode="multiply"
         android:text="@string/add_stop"
         android:textColor="@color/button_transparent_text"
         app:layout_constraintBottom_toBottomOf="parent"

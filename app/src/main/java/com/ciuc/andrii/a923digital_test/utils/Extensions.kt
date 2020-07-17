@@ -7,9 +7,14 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
 import android.view.View
+import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import java.security.AccessController
 
 //todo Context extensions
 fun Context.toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
@@ -37,11 +42,17 @@ fun FragmentManager.removeFragment(fragment: Fragment) =
 
 
 //todo View extensions
-fun View.show()  { visibility = View.VISIBLE }
+fun View.show() {
+    visibility = View.VISIBLE
+}
 
-fun View.hide() { visibility = View.INVISIBLE }
+fun View.hide() {
+    visibility = View.INVISIBLE
+}
 
-fun View.gone() { visibility = View.GONE }
+fun View.gone() {
+    visibility = View.GONE
+}
 
 //todo Int representation of permission's state extensions
 fun Int.permissionGranted(): Boolean = this == PackageManager.PERMISSION_GRANTED
