@@ -30,7 +30,9 @@
         android:backgroundTint="@color/search_button_bg"
         app:rippleColor="@color/search_button_ripple"
         app:fabSize="normal"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="15dp"
+        android:layout_marginTop="@dimen/margin_15dp"
+        android:layout_marginEnd="@dimen/margin_15dp"
         app:borderWidth="0dp"/>
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

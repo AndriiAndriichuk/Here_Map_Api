@@ -1,19 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="corner_radius">50dp</dimen>
+    <!--Widths and Heights-->
     <dimen name="width_50">50dp</dimen>
     <dimen name="height_50">50dp</dimen>
-    <dimen name="bg_stroke_width">1dp</dimen>
-    <dimen name="margin_small_button">15dp</dimen>
-    <dimen name="margin_big_button">30dp</dimen>
-    <dimen name="elevation_card_8">8dp</dimen>
-    <dimen name="text_size_20">20sp</dimen>
-    <dimen name="text_size_16">16sp</dimen>
-    <dimen name="padding_10">10dp</dimen>
-    <dimen name="margin_50dp">50dp</dimen>
+
     <dimen name="material_width">48dp</dimen>
     <dimen name="material_height">48dp</dimen>
-    <dimen name="material_padding">12dp</dimen>
-    <dimen name="material_padding_16">16dp</dimen>
+
+    <dimen name="bg_stroke_width">1dp</dimen>
+
+    <dimen name="corner_radius">50dp</dimen>
+    <dimen name="elevation_card_8">8dp</dimen>
+
+    <!--Text Sizes-->
+    <dimen name="text_size_16">16sp</dimen>
+    <dimen name="text_size_20">20sp</dimen>
+
+    <!--Paddings-->
+    <dimen name="padding_10">10dp</dimen>
+    <dimen name="padding_12dp">12dp</dimen>
+    <dimen name="padding_16">16dp</dimen>
+
+    <!--Margins-->
+    <dimen name="margin_15dp">15dp</dimen>
+    <dimen name="margin_30dp">30dp</dimen>
+    <dimen name="margin_50dp">50dp</dimen>
+
 
 </resources>
