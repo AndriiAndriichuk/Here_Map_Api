@@ -4,35 +4,79 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.main_map.MainActivity"
-    android:fitsSystemWindows="true">
+    android:animateLayoutChanges="true"
+    android:fitsSystemWindows="true"
+    android:id="@+id/constraintMain"
+    tools:context=".ui.main_map.MainActivity">
 
 
-    <fragment
-        class="com.here.android.mpa.mapping.AndroidXMapFragment"
+    <androidx.fragment.app.FragmentContainerView
         android:id="@+id/mapfragment"
+        android:name="com.here.android.mpa.mapping.AndroidXMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:fitsSystemWindows="true"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnSearch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_search"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="@dimen/margin_30dp"
+        android:layout_marginEnd="@dimen/margin_30dp"
         android:background="@color/search_button_bg"
         android:backgroundTint="@color/search_button_bg"
-        app:rippleColor="@color/search_button_ripple"
+        android:src="@drawable/ic_search"
+        app:borderWidth="0dp"
         app:fabSize="normal"
-        android:layout_marginTop="@dimen/margin_15dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:rippleColor="@color/search_button_ripple" />
+
+
+    <Button
+        android:id="@+id/btnSimulate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/margin_15dp"
-        app:borderWidth="0dp"/>
+        android:layout_marginBottom="@dimen/margin_30dp"
+        android:background="@drawable/bg_button_green"
+        android:text="@string/simulate"
+        android:textColor="@color/button_green_text"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+    <Button
+        android:id="@+id/btnEndSimulation"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_30dp"
+        android:layout_marginBottom="@dimen/margin_35dp"
+        android:background="@drawable/bg_button_red"
+        android:backgroundTint="@color/button_red_bg"
+        android:text="@string/end"
+        android:textColor="@color/button_green_text"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/btnPauseSimulation"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/margin_30dp"
+        android:layout_marginBottom="@dimen/margin_35dp"
+        android:background="@drawable/bg_button_green"
+        android:text="@string/pause"
+        android:textColor="@color/button_green_text"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

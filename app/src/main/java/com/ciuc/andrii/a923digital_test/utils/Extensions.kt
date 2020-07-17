@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import com.ciuc.andrii.a923digital_test.ui.search.SearchFragment
 import java.security.AccessController
 
 //todo Context extensions
@@ -29,7 +30,7 @@ fun Activity.openAppSettings(requestCode: Int) {
 
 //todo FragmentManager extensions
 fun FragmentManager.containsFragment(fragment: Fragment) =
-    findFragmentByTag(fragment.javaClass.simpleName) == null
+    findFragmentByTag(fragment.javaClass.simpleName) != null
 
 fun FragmentManager.addFragment(fragment: Fragment) =
     this.beginTransaction()

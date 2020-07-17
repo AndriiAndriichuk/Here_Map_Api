@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.os.Build
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -16,11 +17,14 @@ import com.ciuc.andrii.a923digital_test.R
 import com.ciuc.andrii.a923digital_test.utils.*
 import kotlinx.android.synthetic.main.dialog_no_internet_gps.*
 import java.security.AccessController
+import java.util.*
+import kotlin.collections.ArrayList
 
-open class BaseActivity : AppCompatActivity(),  ActivityCompat.OnRequestPermissionsResultCallback {
+open class BaseActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
     protected var hasPermissions: Boolean = false
     protected var gpsProviderEnabled = false
     protected var internetEnabled = false
+    protected var locale: Locale = Locale.US
 
 
     protected fun checkPermissions(permissions: Array<String> = PERMISSIONS): Boolean {
@@ -98,7 +102,6 @@ open class BaseActivity : AppCompatActivity(),  ActivityCompat.OnRequestPermissi
             view.setOnTouchListener { v, _ ->
                 if (AccessController.getContext() != null)
                     hideKeyboard(this)
-                v.performClick()
                 false
             }
         }
@@ -125,6 +128,14 @@ open class BaseActivity : AppCompatActivity(),  ActivityCompat.OnRequestPermissi
                 ex.printStackTrace()
             }
 
+        }
+    }
+
+    protected fun getCurrentLocale(): Locale {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            resources.configuration.locales.get(0)
+        } else {
+            resources.configuration.locale
         }
     }
 }

@@ -29,7 +29,7 @@ class WayPointView @JvmOverloads constructor(
 
     private fun initWayPoint() {
         val adapter = ArrayAdapter(
-            this.context, android.R.layout.simple_dropdown_item_1line, wayPoints
+            this.context, R.layout.layout_autocomplete_item, wayPoints
         )
 
         editWaypoint.setAdapter(adapter)

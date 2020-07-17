@@ -1,12 +1,12 @@
 <resources>
     <string name="app_name">923Digital_Test</string>
+    <string name="app_label">923Digital Map</string>
     <string name="app_key_id">wnByOVzOLWhfIEGdyAF7</string>
     <string name="app_code">7U2Le3u9h8qPMeeOaBrSyA</string>
     <string name="app_secret">5f8vYQ5YUu2YESepygvk4kXYBF6yuG3qK8iQUNlEYmdnlqSe__cUpYLNwqBBLJc3F0QvfGwsR4RAfAHCP1gUwA</string>
 
     <string name="license_key">fIADFSAebhR8QoZADC4svPPaxgu1w/W+7Dsif6k+caLxp3eYMuXZyD+WKtIlCeRlycySUVfGpgBRKEGWiTeB5+EzvxRVOL1Ha/ByLnR/aYXBRUlWF6oW3IHDxDIxeeGcSRRZSvcMbnibHTDYsfg/HGwhQWpFZKTs+gkx6Keow7LE93yg+das2mhiPn3ZUYJ8SIK4ofj4YK2RJgv82a4La2uPa+qQzpNK5BPJRRid8JzATnd+dMy2f84NA561huBjBDp/lX9z2DDEkkqwd5y/ggfLSk9mp0aC0fpczDvwu+wpZv0LEZJO8bwAYwUJRFj4eH79jntnECsZpC280sKJniog+RXjgf+kTn0mq5h3cIyoUQhfmOI/hDBe0BcoJUVa6dmiTgLMHAjR8WnBMHmb4UP66VzXuVr9qBL88sDzddWgJeJ+nmarBi/4c/BUegxkvBBAlxo84pr1BBSobAqHpUkhOEUSIKS8tVq9yHrIX9M2bOLfh2c9UTZsG9EbMUJMxTRwQ7PblPJRuFNpIXYl+Nb3i0E1y54tISRwDtyE/yhmanSRw4fuu1kIdZ1BUApdpRDQWZdxBRX+6u3xW52beQH2ZUOWxKlvWBgukp23omsaaATSuzqfQINbUr/ofYJwtQzSS8XPhaW3bmuRnmeAC9mQQ+IPkW11lbN+s+uXvkI=</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
     <string name="drive">Drive</string>
     <string name="add_stop">Add Stop</string>
     <string name="start_typing_the_address">Start typing the address</string>
@@ -17,4 +17,8 @@
     <string name="internet">Internet</string>
     <string name="please_turn_on">Please, turn on</string>
     <string name="retry">Retry</string>
+    <string name="simulate">Simulate</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+    <string name="end">End</string>
 </resources>

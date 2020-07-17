@@ -21,8 +21,12 @@ import com.ciuc.andrii.a923digital_test.utils.show
 import com.ciuc.andrii.a923digital_test.utils.toast
 import com.here.android.mpa.common.GeoCoordinate
 import com.here.android.mpa.routing.RouteWaypoint
+import com.here.android.mpa.search.*
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.android.synthetic.main.layout_stop_item.view.*
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
 private const val ARG_PARAM1 = "param1"
@@ -32,6 +36,21 @@ class SearchFragment(var onDriveStartedListener: OnDriveStartedListener) : Fragm
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+
+    var placesList = arrayListOf<PlaceLink>()
+    val mapChosenWayPoints: HashMap<String, GeoCoordinate?> = hashMapOf()
+
+
+    private val discoveryResultPageListener =
+        ResultListener<DiscoveryResultPage?> { discoveryResultPage, errorCode ->
+            if (errorCode === ErrorCode.NONE) {
+                val results = discoveryResultPage?.items!!
+                placesList = results.filter { it.resultType == DiscoveryResult.ResultType.PLACE }
+                    .map { it as PlaceLink } as ArrayList<PlaceLink>
+            } else {
+                Log.d("error123", errorCode.toString())
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,13 +89,7 @@ class SearchFragment(var onDriveStartedListener: OnDriveStartedListener) : Fragm
                 linearSearchLabels.children.filter { it.editWaypoint.text.isNotEmpty() }.toList()
             if (notEmptyWayPoints.isNotEmpty()) {
                 onDriveStartedListener.onDriveStarted(
-                    listOf(
-                        RouteWaypoint(
-                            GeoCoordinate(
-                                48.394580, 25.952817
-                            )
-                        ), RouteWaypoint(GeoCoordinate(48.347266, 25.960217))
-                    )
+                    mapChosenWayPoints.values.map { RouteWaypoint(it!!) }
                 )
 
                 closeThisFragment()
@@ -90,20 +103,11 @@ class SearchFragment(var onDriveStartedListener: OnDriveStartedListener) : Fragm
 
     private fun addWayPointViewToLayout() {
         val lastWayPoint = linearSearchLabels.getChildAt(linearSearchLabels.childCount - 1)
-        if (linearSearchLabels.childCount == 0 || (linearSearchLabels.childCount >= 1 && lastWayPoint.editWaypoint.text.isNotEmpty())) {
-            val rowView = WayPointView(context!!)
-            rowView.textStop.text = "Stop ${linearSearchLabels.childCount + 1}"
 
-            rowView.setAutoCompleteList(
-                arrayOf(
-                    "Мурзик",
-                    "Рыжик",
-                    "Барсик",
-                    "Борис",
-                    "Мурзилка",
-                    "Мурка"
-                )
-            )
+        if (linearSearchLabels.childCount == 0 || (linearSearchLabels.childCount >= 1 && lastWayPoint.editWaypoint.text.isNotEmpty())) {
+            val rowView = WayPointView(requireContext())
+            val text = "Stop ${linearSearchLabels.childCount + 1}"
+            rowView.textStop.text = text
 
             rowView.editWaypoint.addTextChangedListener(
                 object :
@@ -111,6 +115,13 @@ class SearchFragment(var onDriveStartedListener: OnDriveStartedListener) : Fragm
                     override fun afterTextChanged(s: Editable?) {
                         if (s?.isNotEmpty()!!) {
                             rowView.btnClearWaypoint.show()
+                            val element =
+                                placesList.firstOrNull { it.title == s.toString() }
+                            if (element != null) {
+                                mapChosenWayPoints[text] = element.position
+                            }
+
+
                         } else {
                             rowView.btnClearWaypoint.gone()
                         }
@@ -122,7 +133,6 @@ class SearchFragment(var onDriveStartedListener: OnDriveStartedListener) : Fragm
                         count: Int,
                         after: Int
                     ) {
-                        Log.d("32324", "1 $start $after $count")
                     }
 
                     override fun onTextChanged(
@@ -131,7 +141,12 @@ class SearchFragment(var onDriveStartedListener: OnDriveStartedListener) : Fragm
                         before: Int,
                         count: Int
                     ) {
-                        Log.d("32324", "$start $before $count")
+                        val searchRequest = SearchRequest(s.toString())
+                        searchRequest.execute(discoveryResultPageListener)
+                        searchRequest.locale = Locale("ua")
+                        rowView.setAutoCompleteList(
+                            placesList.map { it.title }.toTypedArray()
+                        )
                     }
                 })
 
@@ -157,11 +172,12 @@ class SearchFragment(var onDriveStartedListener: OnDriveStartedListener) : Fragm
             if (fragmentManager.findFragmentByTag(this@SearchFragment.javaClass.simpleName) != null)
                 fragmentManager.removeFragment(this@SearchFragment)
         }
+        placesList.clear()
+        mapChosenWayPoints.clear()
     }
 
     companion object {
         @JvmStatic
-        val TAG = this.javaClass.simpleName
         fun newInstance(
             param1: String = "",
             param2: String = "",

@@ -42,6 +42,20 @@ class MainActivity : BaseActivity(),
         ViewModelProviders.of(this).get(MainViewModel::class.java)
     }
 
+    //todo Adding listener to fix selected wayPoints in Fragment
+    private val onDriveStartedListener = object : OnDriveStartedListener {
+        override fun onDriveStarted(list: List<RouteWaypoint>) {
+            clearMapExceptLocation()
+            list.forEach { wayPoint ->
+                addWayPointMarkerToMap(wayPoint.originalPosition)
+                createRouteFromCurrentLocation(list)
+                btnSimulate.show()
+            }
+        }
+    }
+
+    private var searchFragment = SearchFragment.newInstance(listener = onDriveStartedListener)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -53,6 +67,8 @@ class MainActivity : BaseActivity(),
 
         checkInternetAndGps()
 
+        locale = getCurrentLocale()
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -62,12 +78,12 @@ class MainActivity : BaseActivity(),
 
 
     override fun onBackPressed() {
-        val fragment =
-            supportFragmentManager.findFragmentByTag(SearchFragment.TAG)
-        if (fragment != null) {
-            supportFragmentManager.removeFragment(fragment)
-        } else {
-            super.onBackPressed()
+        searchFragment.let { fragment ->
+            if (supportFragmentManager.containsFragment(fragment).not()) {
+                supportFragmentManager.removeFragment(fragment)
+            } else {
+                super.onBackPressed()
+            }
         }
     }
 
@@ -103,7 +119,6 @@ class MainActivity : BaseActivity(),
             if (error == OnEngineInitListener.Error.NONE) {
                 mapEngineInitialized = true
                 startPositionManager()
-
                 //createRouteFromCurrentLocation(wayPoint)
                 //testing search places functionality
                 //searchPlaces()
@@ -115,27 +130,39 @@ class MainActivity : BaseActivity(),
         //hiding ActionBar
         supportActionBar?.hide()
 
+        btnSimulate.gone()
+
         hideKeyboardIfUserClicksNotOnEditText(window.decorView.rootView)
 
-        //todo Adding listener to fix selected wayPoints in Fragment
-        val fragment =
-            SearchFragment.newInstance(
-                listener = object : OnDriveStartedListener {
-                    override fun onDriveStarted(list: List<RouteWaypoint>) {
-                        toast(list.toString())
-                        list.forEach { wayPoint ->
-                            addWayPointMarkerToMap(wayPoint.originalPosition)
-                            createRouteFromCurrentLocation(list)
-                        }
-                    }
-                })
-
-
         btnSearch.setOnClickListener {
-            if (supportFragmentManager.containsFragment(fragment)) {
-                supportFragmentManager.addFragment(fragment)
+            searchFragment.let { fragment ->
+                if (supportFragmentManager.containsFragment(fragment).not()) {
+                    btnSimulate.gone()
+                    supportFragmentManager.addFragment(fragment)
+                } else {
+                    supportFragmentManager.removeFragment(fragment)
+                    searchFragment = SearchFragment.newInstance(listener = onDriveStartedListener)
+                }
+            }
+        }
+
+        btnSimulate.setOnClickListener {
+            btnSimulate.gone()
+            btnEndSimulation.show()
+            btnPauseSimulation.show()
+        }
+
+        btnEndSimulation.setOnClickListener {
+            btnEndSimulation.gone()
+            btnPauseSimulation.gone()
+            clearMapExceptLocation()
+        }
+
+        btnPauseSimulation.setOnClickListener {
+            if (btnPauseSimulation.text == resources.getString(R.string.pause)) {
+                btnPauseSimulation.text = resources.getString(R.string.resume)
             } else {
-                supportFragmentManager.removeFragment(fragment)
+                btnPauseSimulation.text = resources.getString(R.string.pause)
             }
         }
     }
@@ -156,8 +183,7 @@ class MainActivity : BaseActivity(),
             pm.dataSource = googleLocationDataSource
             pm.addListener(WeakReference(this@MainActivity))
             if (pm.start(PositioningManager.LocationMethod.GPS_NETWORK)) {
-                // Position updates started successfully.
-                toast("Position updates started successfully.")
+                Log.d("4333",  "Position updates started successfully.")
             }
         }
     }
@@ -203,11 +229,23 @@ class MainActivity : BaseActivity(),
     private fun addWayPointMarkerToMap(geoCoordinate: GeoCoordinate) {
         val markerImage = Image()
         try {
-            markerImage.setImageResource(R.drawable.ic_circle)
+            markerImage.setImageResource(R.drawable.ic_circle1)
             val marker = MapMarker(geoCoordinate, markerImage)
             map?.addMapObject(marker)
             listMarkers.add(marker)
 
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+    }
+
+    private fun clearMapExceptLocation() {
+        try {
+            map?.removeAllMapObjects()
+            currentLocation?.let {
+                addCurrentLocationMarkerToMap(it)
+            }
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -299,33 +337,6 @@ class MainActivity : BaseActivity(),
                 Toast.makeText(this@MainActivity, "Can't create route $error", Toast.LENGTH_SHORT)
                     .show()
             }
-        }
-    }
-
-    private val placeResultListener: ResultListener<Place> =
-        ResultListener<Place> { place, errorCode ->
-            if (errorCode === ErrorCode.NONE) {
-                val geoCoordinate = place?.location!!.coordinate
-                //  m_placeLocation.setText(geoCoordinate.toString())
-                Log.d("fbsdbs", place.name.toString())
-
-            } else {
-                Log.d("fbsdbs", place?.name.toString())
-                Toast.makeText(
-                    applicationContext,
-                    "ERROR:Place request returns error: $errorCode", Toast.LENGTH_SHORT
-                )
-                    .show()
-            }
-        }
-
-    private fun searchPlaces() {
-        val result = searchResultList?.get(0)
-        if (result?.resultType == DiscoveryResult.ResultType.PLACE) {
-            /* Fire the PlaceRequest */
-            val placeLink = result as PlaceLink
-            val placeRequest = placeLink.detailsRequest
-            placeRequest?.execute(placeResultListener)
         }
     }
 
