@@ -252,35 +252,6 @@ class MainActivity : BaseActivity(),
 
     }
 
-    private fun createRouteFromCurrentLocation(wayPoint: RouteWaypoint) {
-        val router = CoreRouter()
-
-        val routeOptions = RouteOptions()
-        routeOptions.transportMode = RouteOptions.TransportMode.CAR
-        routeOptions.setHighwaysAllowed(false)
-        routeOptions.routeType =
-            RouteOptions.Type.FASTEST
-        routeOptions.routeCount = 1
-
-        val routePlan = RoutePlan()
-        routePlan.addWaypoint(
-            RouteWaypoint(
-                currentLocation as GeoCoordinate
-            )
-        )
-        routePlan.addWaypoint(
-            wayPoint
-        )
-
-        // Create the RouteOptions and set its transport mode & routing type
-
-        routePlan.routeOptions = routeOptions
-
-
-        // Calculate the route
-        router.calculateRoute(routePlan, RouteListener())
-    }
-
     private fun createRouteFromCurrentLocation(list: List<RouteWaypoint>) {
         val router = CoreRouter()
 
