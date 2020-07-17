@@ -15,12 +15,11 @@ import androidx.core.view.children
 import androidx.transition.Slide
 import com.ciuc.andrii.a923digital_test.R
 import com.ciuc.andrii.a923digital_test.ui.search.custom_view.waypoint_view.WayPointView
+import com.ciuc.andrii.a923digital_test.ui.search.listener.OnDriveStartedListener
 import com.ciuc.andrii.a923digital_test.utils.gone
 import com.ciuc.andrii.a923digital_test.utils.removeFragment
 import com.ciuc.andrii.a923digital_test.utils.show
 import com.ciuc.andrii.a923digital_test.utils.toast
-import com.here.android.mpa.common.GeoCoordinate
-import com.here.android.mpa.routing.RouteWaypoint
 import com.here.android.mpa.search.*
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.android.synthetic.main.layout_stop_item.view.*

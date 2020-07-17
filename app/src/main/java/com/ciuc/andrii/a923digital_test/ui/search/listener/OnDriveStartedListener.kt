@@ -1,4 +1,4 @@
-package com.ciuc.andrii.a923digital_test.ui.search
+package com.ciuc.andrii.a923digital_test.ui.search.listener
 
 import com.here.android.mpa.search.PlaceLink
 
