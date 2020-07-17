@@ -1,23 +1,15 @@
 package com.ciuc.andrii.a923digital_test.ui.main_map
 
 import android.app.Activity
-import android.app.Dialog
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProviders
 import com.ciuc.andrii.a923digital_test.R
+import com.ciuc.andrii.a923digital_test.ui.BaseActivity
 import com.ciuc.andrii.a923digital_test.ui.search.OnDriveStartedListener
 import com.ciuc.andrii.a923digital_test.ui.search.SearchFragment
 import com.ciuc.andrii.a923digital_test.utils.*
@@ -29,20 +21,14 @@ import com.here.android.mpa.mapping.MapRoute
 import com.here.android.mpa.routing.*
 import com.here.android.mpa.search.*
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.dialog_no_internet_gps.*
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
-import java.security.AccessController
 
 
-class MainActivity : AppCompatActivity(),
-    ActivityCompat.OnRequestPermissionsResultCallback,
+class MainActivity : BaseActivity(),
     PositioningManager.OnPositionChangedListener {
 
-    private var hasPermissions: Boolean = false
-    private var gpsProviderEnabled = false
-    private var internetEnabled = false
     private var searchResultList: MutableList<DiscoveryResult>? = null
     private var map: Map? = null
     private var mapFragment: AndroidXMapFragment? = null
@@ -51,7 +37,6 @@ class MainActivity : AppCompatActivity(),
     private var mapEngineInitialized: Boolean = false
     private var currentLocationMarker: MapMarker? = null
     private var locationManager: LocationManager? = null
-
 
     private val mainViewModel: MainViewModel by lazy {
         ViewModelProviders.of(this).get(MainViewModel::class.java)
@@ -140,83 +125,8 @@ class MainActivity : AppCompatActivity(),
 
     }
 
-    //todo The function allows us to hide keyboard if user clicks on all views except ExitText
-    private fun hideKeyboardIfUserClicksNotOnEditText(view: View) {
-        // Set up touch listener for non-text box views to hide keyboard.
-        if (view !is EditText) {
-            view.setOnTouchListener { _, _ ->
-                if (AccessController.getContext() != null)
-                    hideKeyboard(this)
-                false
-            }
-        }
-        //If a layout container, iterate over children and seed recursion.
-        if (view is ViewGroup) {
-            for (i in 0 until view.childCount) {
-                val innerView = view.getChildAt(i)
-                hideKeyboardIfUserClicksNotOnEditText(innerView)
-            }
-        }
-    }
 
-    //todo Hiding system's keyboard
-    private fun hideKeyboard(context: Context) {
-        val inputManager =
-            context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        if ((context as Activity).currentFocus != null) {
-            try {
-                inputManager.hideSoftInputFromWindow(
-                    (context as AppCompatActivity).currentFocus!!.windowToken,
-                    0
-                )
-            } catch (ex: NullPointerException) {
-                ex.printStackTrace()
-            }
-
-        }
-    }
-
-    private fun checkPermissions(): Boolean {
-        var result: Int
-        val listPermissionsNeededToRequest: ArrayList<String> = ArrayList()
-        for (permission in PERMISSIONS) {
-            result = ContextCompat.checkSelfPermission(this, permission)
-            if (result.permissionDenied()) {
-                listPermissionsNeededToRequest.add(permission)
-            }
-        }
-        if (listPermissionsNeededToRequest.isNotEmpty()) {
-            ActivityCompat.requestPermissions(
-                this,
-                listPermissionsNeededToRequest.toArray(
-                    arrayOfNulls<String>(
-                        listPermissionsNeededToRequest.size
-                    )
-                ),
-                PERMISSIONS_REQUEST
-            )
-            return false
-        }
-        return true
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        when (requestCode) {
-            PERMISSIONS_REQUEST -> {
-                if (grantResults.contains(PackageManager.PERMISSION_DENIED)) {
-                    toast(getString(R.string.please_grand_permissions))
-                    openAppSettings(requestCode)
-                }
-                return
-            }
-        }
-    }
-
-    private fun checkInternetAndGps() {
+    override fun checkInternetAndGps() {
         gpsProviderEnabled = gpsProviderEnabled()
         internetEnabled = mainViewModel.hasNetworkConnection(application)
 
@@ -239,14 +149,6 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    private fun gpsProviderEnabled(): Boolean {
-        val locationManager =
-            getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && packageManager.hasSystemFeature(
-            PackageManager.FEATURE_LOCATION_GPS
-        )
-    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -255,22 +157,6 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    private fun showNoInternetOrGpsDialog(
-        internetEnabled: Boolean = true,
-        gpsEnabled: Boolean = true
-    ) {
-
-        val dialog = Dialog(this@MainActivity)
-        dialog.setCancelable(false)
-        dialog.setContentView(R.layout.dialog_no_internet_gps)
-        dialog.btnRetry.setOnClickListener {
-            checkInternetAndGps()
-            dialog.cancel()
-        }
-        if (internetEnabled.not()) dialog.titleInternet.show()
-        if (gpsEnabled.not()) dialog.titleGps.show()
-        dialog.show()
-    }
 
     override fun onBackPressed() {
         val fragment =
