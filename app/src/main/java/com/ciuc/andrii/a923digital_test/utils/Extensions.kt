@@ -15,6 +15,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.ciuc.andrii.a923digital_test.ui.search.SearchFragment
+import com.here.android.mpa.common.GeoCoordinate
+import com.here.android.mpa.routing.RouteWaypoint
+import com.here.android.mpa.search.PlaceLink
 import java.security.AccessController
 
 //todo Context extensions
@@ -58,3 +61,12 @@ fun View.gone() {
 //todo Int representation of permission's state extensions
 fun Int.permissionGranted(): Boolean = this == PackageManager.PERMISSION_GRANTED
 fun Int.permissionDenied(): Boolean = this == PackageManager.PERMISSION_DENIED
+
+//todo PlaceLink extensions
+fun PlaceLink.toRouteWayPoint() = RouteWaypoint(
+    GeoCoordinate(
+        position?.latitude as Double,
+        position?.longitude as Double,
+        position?.altitude as Double
+    )
+)

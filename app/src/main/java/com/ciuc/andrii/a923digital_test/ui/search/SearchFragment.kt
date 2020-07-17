@@ -38,7 +38,7 @@ class SearchFragment(var onDriveStartedListener: OnDriveStartedListener) : Fragm
     private var param2: String? = null
 
     var placesList = arrayListOf<PlaceLink>()
-    val mapChosenWayPoints: HashMap<String, GeoCoordinate?> = hashMapOf()
+    val mapChosenWayPoints: HashMap<String, PlaceLink> = hashMapOf()
 
 
     private val discoveryResultPageListener =
@@ -89,7 +89,7 @@ class SearchFragment(var onDriveStartedListener: OnDriveStartedListener) : Fragm
                 linearSearchLabels.children.filter { it.editWaypoint.text.isNotEmpty() }.toList()
             if (notEmptyWayPoints.isNotEmpty()) {
                 onDriveStartedListener.onDriveStarted(
-                    mapChosenWayPoints.values.map { RouteWaypoint(it!!) }
+                    mapChosenWayPoints.values.map { it }
                 )
 
                 closeThisFragment()
@@ -118,7 +118,7 @@ class SearchFragment(var onDriveStartedListener: OnDriveStartedListener) : Fragm
                             val element =
                                 placesList.firstOrNull { it.title == s.toString() }
                             if (element != null) {
-                                mapChosenWayPoints[text] = element.position
+                                mapChosenWayPoints[text] = element
                             }
 
 

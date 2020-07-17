@@ -21,4 +21,6 @@
     <string name="pause">Pause</string>
     <string name="resume">Resume</string>
     <string name="end">End</string>
+    <string name="stop">Stop</string>
+    <string name="my_location">My location</string>
 </resources>

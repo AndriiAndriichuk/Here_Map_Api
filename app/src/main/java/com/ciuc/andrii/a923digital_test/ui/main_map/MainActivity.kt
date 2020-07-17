@@ -3,6 +3,7 @@ package com.ciuc.andrii.a923digital_test.ui.main_map
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.PointF
 import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
@@ -12,14 +13,18 @@ import com.ciuc.andrii.a923digital_test.R
 import com.ciuc.andrii.a923digital_test.ui.BaseActivity
 import com.ciuc.andrii.a923digital_test.ui.search.OnDriveStartedListener
 import com.ciuc.andrii.a923digital_test.ui.search.SearchFragment
+import com.ciuc.andrii.a923digital_test.ui.search.WayPointInfoFragment
 import com.ciuc.andrii.a923digital_test.utils.*
 import com.here.android.mpa.common.*
-import com.here.android.mpa.mapping.AndroidXMapFragment
+import com.here.android.mpa.guidance.NavigationManager
+import com.here.android.mpa.guidance.NavigationManager.NewInstructionEventListener
+import com.here.android.mpa.guidance.VoiceCatalog
+import com.here.android.mpa.mapping.*
 import com.here.android.mpa.mapping.Map
-import com.here.android.mpa.mapping.MapMarker
-import com.here.android.mpa.mapping.MapRoute
 import com.here.android.mpa.routing.*
-import com.here.android.mpa.search.*
+import com.here.android.mpa.routing.Route.TrafficPenaltyMode
+import com.here.android.mpa.search.DiscoveryResult
+import com.here.android.mpa.search.PlaceLink
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.io.IOException
@@ -29,7 +34,7 @@ import java.lang.ref.WeakReference
 class MainActivity : BaseActivity(),
     PositioningManager.OnPositionChangedListener {
 
-    private var searchResultList: MutableList<DiscoveryResult>? = null
+    private val NAVIGATION_SPEED: Long = 50
     private var map: Map? = null
     private var mapFragment: AndroidXMapFragment? = null
     private var currentLocation: GeoCoordinate? = null
@@ -37,6 +42,8 @@ class MainActivity : BaseActivity(),
     private var mapEngineInitialized: Boolean = false
     private var currentLocationMarker: MapMarker? = null
     private var locationManager: LocationManager? = null
+    private var currentRoute: Route? = null
+    private var onNavigationMode = false
 
     private val mainViewModel: MainViewModel by lazy {
         ViewModelProviders.of(this).get(MainViewModel::class.java)
@@ -44,23 +51,122 @@ class MainActivity : BaseActivity(),
 
     //todo Adding listener to fix selected wayPoints in Fragment
     private val onDriveStartedListener = object : OnDriveStartedListener {
-        override fun onDriveStarted(list: List<RouteWaypoint>) {
+        override fun onDriveStarted(list: List<PlaceLink>) {
             clearMapExceptLocation()
             list.forEach { wayPoint ->
-                addWayPointMarkerToMap(wayPoint.originalPosition)
+                addWayPointMarkerToMap(wayPoint)
                 createRouteFromCurrentLocation(list)
                 btnSimulate.show()
             }
         }
     }
 
+    val listener = object :
+        MapGesture.OnGestureListener {
+        override fun onLongPressRelease() {}
+
+        override fun onRotateEvent(p0: Float): Boolean {
+            return false
+        }
+
+        override fun onMultiFingerManipulationStart() {}
+
+        override fun onPinchLocked() {}
+
+        override fun onPinchZoomEvent(p0: Float, p1: PointF): Boolean {
+            return false
+        }
+
+        override fun onTapEvent(p0: PointF): Boolean {
+            return false
+        }
+
+        override fun onPanStart() {}
+
+        override fun onMultiFingerManipulationEnd() {}
+
+        override fun onDoubleTapEvent(p0: PointF): Boolean {
+            return false
+        }
+
+        override fun onPanEnd() {}
+
+        override fun onTiltEvent(p0: Float): Boolean {
+            return false
+        }
+
+        override fun onMapObjectsSelected(p0: MutableList<ViewObject>): Boolean {
+            Log.d("34343", p0.toString())
+            val mapObjects = p0.filter { it is MapMarker }
+            val mapMarker = mapObjects[0] as MapObject
+
+            if (mapMarker is MapMarker) {
+                val fragment =
+                    WayPointInfoFragment.newInstance(stopAddress = mapMarker.title.toString())
+                if (supportFragmentManager.containsFragment(fragment).not()) {
+                    supportFragmentManager.addFragment(fragment)
+                } else {
+                    supportFragmentManager.removeFragment(fragment)
+                }
+            }
+            return false
+        }
+
+        override fun onRotateLocked() {}
+
+        override fun onLongPressEvent(p0: PointF): Boolean {
+            return false
+        }
+
+        override fun onTwoFingerTapEvent(p0: PointF): Boolean {
+            return false
+        }
+
+    }
+
+    // declare the listeners
+// add application specific logic in each of the callbacks.
+
+    // declare the listeners
+    // add application specific logic in each of the callbacks.
+    private val instructListener: NewInstructionEventListener =
+        object : NewInstructionEventListener() {
+            override fun onNewInstructionEvent() {
+                // Interpret and present the Maneuver object as it contains
+                // turn by turn navigation instructions for the user.
+                navigationManager!!.nextManeuver
+            }
+        }
+
+    private val positionListener: NavigationManager.PositionListener =
+        object : NavigationManager.PositionListener() {
+            override fun onPositionUpdated(loc: GeoPosition) {
+                // the position we get in this callback can be used
+                // to reposition the map and change orientation.
+                loc.coordinate
+                loc.heading
+                loc.speed
+
+                // also remaining time and distance can be
+                // fetched from navigation manager
+                navigationManager!!.getTta(TrafficPenaltyMode.DISABLED, true)
+                navigationManager!!.destinationDistance
+            }
+        }
+
     private var searchFragment = SearchFragment.newInstance(listener = onDriveStartedListener)
+
+    // Declare the navigationManager member variable
+    private var navigationManager: NavigationManager? = null
+    // Get the NavigationManager
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         initializeMap()
+        //initializeNavigation()
         setUpUI()
 
         hasPermissions = checkPermissions()
@@ -107,6 +213,7 @@ class MainActivity : BaseActivity(),
                     )
                     map?.zoomLevel = (map?.maxZoomLevel as Double + map?.minZoomLevel!!) / 2
 
+                    mapFragment.mapGesture?.addOnGestureListener(listener, 0, false)
                 } else {
                     toast(getString(R.string.cannot_initialize_map))
                 }
@@ -119,12 +226,69 @@ class MainActivity : BaseActivity(),
             if (error == OnEngineInitListener.Error.NONE) {
                 mapEngineInitialized = true
                 startPositionManager()
+                initializeNavigation()
                 //createRouteFromCurrentLocation(wayPoint)
                 //testing search places functionality
                 //searchPlaces()
             }
         }
     }
+
+    private fun initializeNavigation() {
+        navigationManager = NavigationManager.getInstance()
+
+        // start listening for navigation events
+        navigationManager?.addNewInstructionEventListener(
+            WeakReference(instructListener)
+        )
+
+        // start listening for position events
+        navigationManager?.addPositionListener(
+            WeakReference(positionListener)
+        )
+
+        val voiceCatalog = VoiceCatalog.getInstance()
+        voiceCatalog.downloadCatalog { errorCode -> }
+
+        // Get the list of voice packages from the voice catalog list
+        val voicePackages =
+            VoiceCatalog.getInstance().catalogList
+
+        var id: Long = -1
+
+        // select
+        for (vPackage in voicePackages) {
+            if (vPackage.marcCode.compareTo("eng", ignoreCase = true) == 0) {
+                if (vPackage.isTts) {
+                    id = vPackage.id
+                    break
+                }
+            }
+        }
+
+
+        if (!voiceCatalog.isLocalVoiceSkin(id)) {
+            voiceCatalog.downloadVoice(id) { }
+        }
+
+        // obtain VoiceGuidanceOptions object
+        val voiceGuidanceOptions = navigationManager?.voiceGuidanceOptions
+
+        // set the voice skin for use by navigation manager
+        voiceCatalog.getLocalVoiceSkin(id)?.let { voiceGuidanceOptions?.setVoiceSkin(it) }
+
+    }
+
+    private fun startNavigation(
+        route: Route,
+        speedMph: Long = NAVIGATION_SPEED
+    ) {
+        // if user wants to start simulation,
+        // submit calculated route and a simulation speed in meters per second
+        navigationManager?.simulate(route, speedMph)
+
+    }
+
 
     private fun setUpUI() {
         //hiding ActionBar
@@ -150,19 +314,29 @@ class MainActivity : BaseActivity(),
             btnSimulate.gone()
             btnEndSimulation.show()
             btnPauseSimulation.show()
+            currentRoute?.let {
+                addCurrentLocationMarkerToMap(currentLocation!!, R.drawable.ic_compass)
+                onNavigationMode = true
+                startNavigation(currentRoute!!)
+            }
         }
 
         btnEndSimulation.setOnClickListener {
             btnEndSimulation.gone()
             btnPauseSimulation.gone()
             clearMapExceptLocation()
+            // abort navigation
+            navigationManager?.stop()
+            onNavigationMode = false
         }
 
         btnPauseSimulation.setOnClickListener {
             if (btnPauseSimulation.text == resources.getString(R.string.pause)) {
                 btnPauseSimulation.text = resources.getString(R.string.resume)
+                navigationManager?.pause()
             } else {
                 btnPauseSimulation.text = resources.getString(R.string.pause)
+                navigationManager?.resume()
             }
         }
     }
@@ -183,7 +357,7 @@ class MainActivity : BaseActivity(),
             pm.dataSource = googleLocationDataSource
             pm.addListener(WeakReference(this@MainActivity))
             if (pm.start(PositioningManager.LocationMethod.GPS_NETWORK)) {
-                Log.d("4333",  "Position updates started successfully.")
+                Log.d("4333", "Position updates started successfully.")
             }
         }
     }
@@ -204,20 +378,27 @@ class MainActivity : BaseActivity(),
         // new position update received
         geoPosition?.coordinate?.let {
             currentLocation = GeoCoordinate(it)
-            addCurrentLocationMarkerToMap(it)
+            if (onNavigationMode)
+                addCurrentLocationMarkerToMap(it, R.drawable.ic_compass)
+            else
+                addCurrentLocationMarkerToMap(it)
         }
     }
 
-    private fun addCurrentLocationMarkerToMap(geoCoordinate: GeoCoordinate) {
+    private fun addCurrentLocationMarkerToMap(
+        geoCoordinate: GeoCoordinate,
+        imageResource: Int = R.drawable.ic_marker
+    ) {
         val markerImage = Image()
         try {
-            markerImage.setImageResource(R.drawable.ic_marker)
+            markerImage.setImageResource(imageResource)
             if (currentLocationMarker != null) {
                 map?.removeMapObject(currentLocationMarker as MapMarker)
                 listMarkers.remove(currentLocationMarker as MapMarker)
             }
 
             currentLocationMarker = MapMarker(geoCoordinate, markerImage)
+            currentLocationMarker!!.title = getString(R.string.my_location)
             map?.addMapObject(currentLocationMarker as MapMarker)
             listMarkers.add(currentLocationMarker as MapMarker)
 
@@ -226,11 +407,13 @@ class MainActivity : BaseActivity(),
         }
     }
 
-    private fun addWayPointMarkerToMap(geoCoordinate: GeoCoordinate) {
+    private fun addWayPointMarkerToMap(placeLink: PlaceLink) {
         val markerImage = Image()
         try {
-            markerImage.setImageResource(R.drawable.ic_circle1)
-            val marker = MapMarker(geoCoordinate, markerImage)
+            markerImage.setImageResource(R.drawable.ic_circle)
+            val marker = MapMarker(placeLink.position!!, markerImage)
+            marker.title = placeLink.title
+
             map?.addMapObject(marker)
             listMarkers.add(marker)
 
@@ -249,10 +432,9 @@ class MainActivity : BaseActivity(),
         } catch (e: IOException) {
             e.printStackTrace()
         }
-
     }
 
-    private fun createRouteFromCurrentLocation(list: List<RouteWaypoint>) {
+    private fun createRouteFromCurrentLocation(list: List<PlaceLink>) {
         val router = CoreRouter()
 
         val routeOptions = RouteOptions()
@@ -272,11 +454,10 @@ class MainActivity : BaseActivity(),
         }
 
         list.forEach {
-            routePlan.addWaypoint(it)
+            routePlan.addWaypoint(it.toRouteWayPoint())
         }
 
         routePlan.routeOptions = routeOptions
-
 
         // Calculate the route
         router.calculateRoute(routePlan, RouteListener())
@@ -304,6 +485,7 @@ class MainActivity : BaseActivity(),
                     gbb!!, Map.Animation.NONE,
                     Map.MOVE_PRESERVE_ORIENTATION
                 )
+                currentRoute = mapRoute.route
             } else {
                 Toast.makeText(this@MainActivity, "Can't create route $error", Toast.LENGTH_SHORT)
                     .show()
